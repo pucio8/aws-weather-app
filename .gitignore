@@ -1,0 +1,8 @@
+venv/
+.aws-sam/
+samconfig.toml
+__pycache__/
+*.zip
+.env
+notes.md
+locals.json

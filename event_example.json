@@ -1,0 +1,27 @@
+{
+    "version": "2.0",
+    "routeKey": "GET /pogoda",
+    "rawPath": "/pogoda",
+    "rawQueryString": "city=Krakow",
+    "headers": {
+        "accept": "text/html,application/xhtml+xml...",
+        "host": "abc123xyz.execute-api.eu-central-1.amazonaws.com",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)...",
+        "x-forwarded-for": "89.64.12.34" 
+    },
+    "queryStringParameters": {
+        "city": "Krakow"
+    },
+    "requestContext": {
+        "http": {
+            "method": "GET",
+            "path": "/pogoda",
+            "protocol": "HTTP/1.1",
+            "sourceIp": "89.64.12.34",
+            "userAgent": "Mozilla/5.0..."
+        },
+        "stage": "$default",
+        "time": "12/Mar/2026:10:55:00 +0000"
+    },
+    "isBase64Encoded": false
+}

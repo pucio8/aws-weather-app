@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Full Stack Weather App with HTTPS (CloudFront + S3 + Lambda)
+
+Parameters:
+  WeatherApiKey:
+    Type: String
+    Description: OpenWeatherMap API Key
+    NoEcho: true
+
+Resources:
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "weather-app-pro-${AWS::AccountId}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "arn:aws:s3:::${FrontendBucket}/*"
+
+  WeatherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.13
+      Timeout: 10
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /weather
+            Method: get
+      Environment:
+        Variables:
+          WEATHER_API_KEY: !Ref WeatherApiKey
+
+  MyCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+          - DomainName: !GetAtt FrontendBucket.RegionalDomainName
+            Id: S3Origin
+            S3OriginConfig:
+              OriginAccessIdentity: "" 
+        Enabled: true
+        DefaultRootObject: index.html
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https 
+          ForwardedValues:
+            QueryString: false
+
+Outputs:
+  BackendApiUrl:
+    Description: "Weather API Gateway Endpoint URL"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/weather"
+  
+  FrontendUrl:
+    Description: "CloudFront Distribution Domain Name (Production HTTPS URL)"
+    Value: !Sub "https://${MyCloudFrontDistribution.DomainName}"
