@@ -24,10 +24,10 @@ def lambda_handler(event, context):
         shift = data.get('timezone', 0)
         local_time = datetime.now(timezone.utc) + timedelta(seconds=shift)
 
-        # Standaryzacja: wysyłamy surowe dane
+
         result = {
             'city': data['name'],
-            'temp': data['main']['temp'], # Liczba!
+            'temp': data['main']['temp'], 
             'description': data['weather'][0]['description'],
             'time': local_time.strftime("%H:%M"),
             'icon': data['weather'][0]['icon']
@@ -36,7 +36,7 @@ def lambda_handler(event, context):
         return {
             'statusCode': 200,
             'headers': {
-                'Access-Control-Allow-Origin': '*', # Ważne dla CORS
+                'Access-Control-Allow-Origin': '*',
                 'Content-Type': 'application/json'
             },
             'body': json.dumps(result)
