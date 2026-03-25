@@ -3,16 +3,9 @@ import json
 import requests
 from datetime import datetime, timedelta, timezone
 
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    pass
-
 def lambda_handler(event, context):
-    params = event.get('queryStringParameters')
-    # Default city changed to Warsaw (English spelling)
-    city = params.get('city') if params else "Warsaw"
+    params = event.get('queryStringParameters') or {}
+    city = params.get('city', 'Warszawa')
     api_key = os.environ.get('WEATHER_API_KEY')
     url = "https://api.openweathermap.org/data/2.5/weather"
     
@@ -20,7 +13,7 @@ def lambda_handler(event, context):
         'q': city,
         'appid': api_key,
         'units': 'metric',
-        'lang': 'pl'
+        'lang': 'en'
     }
 
     try:
@@ -28,28 +21,29 @@ def lambda_handler(event, context):
         response.raise_for_status() 
         data = response.json()
         
-        shift_in_seconds = data.get('timezone', 0)
-        local_time = datetime.now(timezone.utc) + timedelta(seconds=shift_in_seconds)
+        shift = data.get('timezone', 0)
+        local_time = datetime.now(timezone.utc) + timedelta(seconds=shift)
 
+        # Standaryzacja: wysyłamy surowe dane
         result = {
             'city': data['name'],
-            'temperature': f"{round(data['main']['temp'])}°C",
+            'temp': data['main']['temp'], # Liczba!
             'description': data['weather'][0]['description'],
             'time': local_time.strftime("%H:%M"),
-            'icon_code': data['weather'][0]['icon']
+            'icon': data['weather'][0]['icon']
         }
 
         return {
             'statusCode': 200,
             'headers': {
-                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Origin': '*', # Ważne dla CORS
                 'Content-Type': 'application/json'
             },
             'body': json.dumps(result)
         }
-
     except Exception as e:
         return {
             'statusCode': 500,
+            'headers': { 'Access-Control-Allow-Origin': '*' },
             'body': json.dumps({'error': str(e)})
         }

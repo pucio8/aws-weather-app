@@ -58,49 +58,43 @@
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Development & Deployment
 
-### ⚠️ Environment Variables (CRITICAL)
+### 1. Environment Setup (Secret Management)
 
-The application requires an OpenWeather API key. For local testing, prepare a `locals.json` file:
+To run this project securely, we separate local development secrets from cloud production parameters:
 
-```json
-{
-  "WeatherFunction": {
-    "OPENWEATHER_API_KEY": "your_secret_key"
-  }
-}
+- **Local Testing:** Create a `.env` file in the root directory (this file is ignored by Git):
+  ```env
+  WEATHER_API_KEY=your_openweather_api_key
+  ```
+- **AWS Production:** Secrets are managed via `template.yaml` parameters and stored in `samconfig.toml` after the first guided deployment.
+
+---
+
+### 2. Rapid Logic Testing (The "Fast" Way)
+
+Test the backend Python logic instantly without the overhead of AWS or Docker. This is ideal for debugging data processing and API responses:
+
+```bash
+python test_logic.py
 ```
 
-### Option A: Running with AWS SAM (Production)
+### 3. Cloud-Native Development (Pro Workflow)
 
-1.  **Build application:**
+Use the following commands for building and syncing your stack:
 
-    ```bash
-    sam build
-    ```
+```bash
+# Sync local changes to AWS in real-time (Development)
+sam sync --stack-name weather-app --watch
 
-2.  **Deploy to AWS:**
+# Build and deploy the infrastructure
+sam build
+sam deploy --guided
 
-    ```bash
-    sam deploy --guided
-    ```
-
-3.  **Sync Static Files to S3:**
-    ```bash
-    aws s3 sync ./static s3://your-bucket-name --delete
-    ```
-
-### Option B: Local Development & Testing
-
-1.  **Run API locally:**
-
-    ```bash
-    sam local start-api --env-vars locals.json
-    ```
-
-2.  **Sanity Check (XSS Test):**
-    Enter `<img src=x onerror=alert(1)>` into the search field to verify security filters.
+# Sync frontend assets to your S3 bucket
+aws s3 sync ./static s3://weather-app-pro-<YOUR_ACCOUNT_ID> --delete
+```
 
 ---
 
@@ -118,5 +112,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Author:** Mateusz (pucio8)  
+**Author:** Mateusz (pucio8)
 **Project Status:** Functional Prototype / Production Ready
+
+```
+
+```
